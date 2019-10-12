@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Weather App</title>
+</head>
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<body>
+    <h1>Weather App</h1>
+    <p>Enter City:</p>
+    <div id="app">
+        <input type="text" v-model="city">
+        <button type="submit" v-on:click='getWeather'>Get Forecast</button><br><br>
+        <strong>{{message}}</strong>
+        <div v-for="x in summary">
+                <p>
+					<ul style="padding: 50px; background-color: #f2f2f2">
+
+                          <li v-if="x.rain">
+                          	   Date & Time: {{ x.dt_txt }} <br>
+                               Conditions: {{x.weather[0].main}} <br>
+                               Temperature: {{x.main.temp}} °C <br>
+                               Wind Speed: {{x.wind.speed}} km/h <br>
+                               Rainfall: {{x.rain["3h"]}} mm
+                          </li>
+
+                          <li v-else>
+                          	   Date & Time: {{ x.dt_txt }} <br>
+                               Conditions: {{x.weather[0].main}} <br>
+                               Temperature: {{x.main.temp}} °C <br>
+                               Wind Speed: {{x.wind.speed}} km/h <br>
+                               Rainfall: 0 mm
+                          </li>    
+                    </ul>    
+                </p>
+        </div>
+    </div>
+
+    <script>
+        
+        new Vue({
+            el:"#app",
+
+            data : {
+                message: "",
+                city: "",
+                weather: "",
+                summary: {}
+            },
+
+            methods: {
+	            getWeather: function(){
+	                var self = this;
+	                let res = fetch("city/"+self.city)
+	                res.then(response => response.json())
+	                .then(response => {
+	                    this.weather = response
+	                    this.message = ""
+
+	                    for(i=0; i<this.weather.list.length;i++){
+	                        var status = this.weather.list[i].weather[0].main
+	                        if(status == "Rain"){
+	                            this.message = "It's going to rain, so pack your wellies and a brolly my friend ☔️"
+	                        }
+	                        else{
+	                        	this.message = "Clear skies, bring your shades 😎"
+	                        }
+	                    }
+
+	                    var j = 0
+	                    var temperature=0;
+	                    for(i=0; i<this.weather.list.length;i+=8){
+	                        this.summary[j] =  this.weather.list[i]
+	                        temperature = temperature + this.summary[j].main.temp
+	                        j++;
+	                    }    
+
+	                    temperature = temperature/5;
+
+	                    if (temperature<10) {
+	                    	this.message = this.message + " Jack frost will be on the prowl so pack a cardigan or two 🥶";
+	                    }
+	                    else if (temperature<20) {
+	                    	this.message = this.message + " It's going to be pretty mild, so pack something cosy for the evenings 🌙";
+	                    }
+	                    else if (temperature > 20) {
+	                    	this.message = this.message + " It is going to be hot hot hot ! Don't even bother packing clothes ☀️";
+	                    }
+
+
+	                })
+	            }
+        	}
+   		 })
+    
+    </script>
+
+</body>
+</html>
+
+
